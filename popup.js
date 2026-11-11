@@ -1,48 +1,41 @@
 const $ = (id) => document.getElementById(id);
-let tab, current = null;
+let tab, state = null, current = null;
+
+const theme = () => (document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+const webPage = () => /^https?:/.test(tab?.url || '');
 
 function render(res = {}) {
-  current = res.device; // background always replies with the tab's current device or null
-  const live = !!current;
-  $('hero').classList.toggle('live', live);
-  $('name').textContent = live ? current.name : 'Off';
-  $('meta').textContent = live ? `${current.width} × ${current.height} · ${current.dpr}x` : 'Pick a device below';
-  $('reset').disabled = $('rotate').disabled = !live;
+  state = res.state || null; // background always replies with the tab's state or null
+  current = state && !state.compare ? state.device : null;
+  $('hero').classList.toggle('live', !!state);
+  $('hero').removeAttribute('aria-busy');
+  $('name').textContent = state?.compare ? 'All devices' : current?.name ?? 'Off';
+  $('meta').textContent = state?.compare ? `${DEVICES.length} side by side`
+    : current ? `${current.width} × ${current.height} · ${current.dpr}x` : 'Pick a device below';
+  $('reset').disabled = !state;
+  $('rotate').disabled = !current;
   for (const b of $('zoom').children) {
-    b.disabled = !live;
-    b.setAttribute('aria-pressed', String(live && String(current.zoom ?? 'fit') === b.dataset.zoom));
+    b.disabled = !current;
+    b.setAttribute('aria-pressed', String(!!current && String(current.zoom ?? 'fit') === b.dataset.zoom));
   }
   for (const b of $('devices').children) b.setAttribute('aria-pressed', String(current?.name === b.dataset.name));
+  if (state) $('full').checked = state.mode === 'full';
+  $('compare-label').textContent = state?.compare ? 'Exit compare' : 'Compare all side by side';
   $('error').textContent = res.error || '';
-  if (live) { $('w').value = current.width; $('h').value = current.height; $('m').checked = current.mobile; }
+  if (current) { $('w').value = current.width; $('h').value = current.height; $('m').checked = current.mobile; }
 }
 
-const COMPARE = chrome.runtime.getURL('compare.html');
-let source = null; // the real page, when the popup was opened on the compare tab
-
-// Swap the compare tab back to the real page, so the device is applied to the site, not to compare.html.
-async function leaveCompare() {
-  const url = source;
-  source = null;
-  const loaded = new Promise((resolve) => {
-    const done = (id, info, t) => {
-      if (id === tab.id && info.status === 'complete' && !t.url.startsWith(COMPARE)) {
-        chrome.tabs.onUpdated.removeListener(done);
-        resolve();
-      }
-    };
-    chrome.tabs.onUpdated.addListener(done);
-  });
-  await chrome.tabs.update(tab.id, { url });
-  await loaded;
-  tab = await chrome.tabs.get(tab.id);
+function send(msg) {
+  $('hero').setAttribute('aria-busy', 'true');
+  $('meta').textContent = 'Loading…';
+  return chrome.runtime.sendMessage({ tabId: tab.id, theme: theme(), ...msg }).then(render);
 }
 
-const send = (msg) => chrome.runtime.sendMessage({ tabId: tab.id, ...msg }).then(render);
-const apply = async (device) => {
-  if (source) await leaveCompare();
-  return send({ type: 'apply', device: { zoom: current?.zoom ?? 'fit', ...device } });
-};
+function apply(device) {
+  const full = $('full').checked;
+  if (!full && !webPage()) return render({ state, error: 'This page can only be shown with Full emulation.' });
+  return send({ type: 'apply', full, device: { zoom: current?.zoom ?? 'fit', ...device } });
+}
 
 for (const d of DEVICES) {
   const b = document.createElement('button');
@@ -68,20 +61,27 @@ for (const b of $('zoom').children) {
 
 $('reset').onclick = () => send({ type: 'reset' });
 
-$('compare').onclick = async () => {
-  const url = source || tab.url || '';
-  if (!/^https?:/.test(url)) return render({ device: current, error: 'Compare only works on http(s) pages.' });
-  await chrome.tabs.create({ url: `compare.html?url=${encodeURIComponent(url)}`, index: tab.index + 1 });
-  window.close();
+$('compare').onclick = () => {
+  if (state?.compare) return send({ type: 'reset' });
+  if (!webPage()) return render({ state, error: 'Compare only works on http(s) pages.' });
+  send({ type: 'compare' });
 };
 
+// Remember the mode; switching it while a device is showing re-applies that device in the new mode.
+$('full').onchange = () => {
+  localStorage.setItem('full', $('full').checked ? '1' : '');
+  if (current) apply(current);
+};
+$('full').checked = localStorage.getItem('full') === '1';
+
 initTheme($('theme'));
+// The framed viewer draws its own background, so push the new theme to it.
+$('theme').addEventListener('click', () => {
+  if (state?.mode !== 'framed') return;
+  if (state.compare) send({ type: 'compare' }); else apply(current);
+});
 
 chrome.tabs.query({ active: true, currentWindow: true }).then(([t]) => {
   tab = t;
-  if (tab.url?.startsWith(COMPARE)) {
-    const url = new URL(tab.url).searchParams.get('url');
-    if (/^https?:\/\//.test(url || '')) source = url;
-  }
   send({ type: 'get' });
 });
