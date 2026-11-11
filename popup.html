@@ -42,8 +42,6 @@
   .field span { font-size: 11px; font-weight: 700; color: var(--muted); }
   .field input { width: 100%; border: 0; background: none; outline: none; font-weight: 600; font-variant-numeric: tabular-nums; }
   .field input::-webkit-inner-spin-button { display: none; }
-  .touch { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; cursor: pointer; user-select: none; }
-  .touch input { margin: 0; accent-color: var(--ink); }
 
   .mode { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px;
           border: 2px solid var(--ink); border-radius: 10px; cursor: pointer; }
@@ -102,7 +100,6 @@
   <form id="custom">
     <label class="field"><span>W</span><input id="w" type="number" min="100" max="4000" placeholder="390" required></label>
     <label class="field"><span>H</span><input id="h" type="number" min="100" max="4000" placeholder="844" required></label>
-    <label class="touch" title="Behave like a touch device (mobile user agent)"><input id="m" type="checkbox"> Touch</label>
     <button class="btn">Go</button>
   </form>
 

@@ -22,7 +22,7 @@ function render(res = {}) {
   if (state) $('full').checked = state.mode === 'full';
   $('compare-label').textContent = state?.compare ? 'Exit compare' : 'Compare all side by side';
   $('error').textContent = res.error || '';
-  if (current) { $('w').value = current.width; $('h').value = current.height; $('m').checked = current.mobile; }
+  if (current) { $('w').value = current.width; $('h').value = current.height; }
 }
 
 function send(msg) {
@@ -49,8 +49,7 @@ for (const d of DEVICES) {
 
 $('custom').onsubmit = (e) => {
   e.preventDefault();
-  const width = +$('w').value, height = +$('h').value, mobile = $('m').checked;
-  apply({ name: 'Custom', width, height, dpr: mobile ? 2 : 1, mobile, ua: mobile ? IOS : undefined });
+  apply({ name: 'Custom', width: +$('w').value, height: +$('h').value, dpr: 1, mobile: false });
 };
 
 $('rotate').onclick = () => apply({ ...current, width: current.height, height: current.width });
