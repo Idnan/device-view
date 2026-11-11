@@ -1,6 +1,8 @@
 // Injected (after shared.js) into a tab that background.js reloaded as a dead image document.
 // Runs on the site's own origin, so the iframes below are same-origin: cookies and logins work.
 (() => {
+  if (window.__deviceView) return; // already running in this document
+  window.__deviceView = true; // background.js checks this to know the viewer is still the top document
   const url = location.href;
   const root = document.documentElement;
   root.innerHTML = '<head><meta charset="utf-8"><title></title><style></style></head><body></body>';
@@ -12,7 +14,7 @@
     html, body { margin: 0; height: 100%; }
     body { background: var(--stage); color: var(--ink); font: 600 13px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
     main { min-height: 100%; display: flex; gap: 28px; padding: 24px; }
-    main.single { align-items: center; justify-content: center; }
+    main.single figure { margin: auto; } /* centres, but unlike justify-content:center never cuts off a frame wider than the window */
     main.compare { align-items: flex-start; overflow-x: auto; }
     figure { margin: 0; flex: none; display: flex; flex-direction: column; gap: 8px; }
     figcaption { display: flex; justify-content: space-between; gap: 16px; font-weight: 700; }
