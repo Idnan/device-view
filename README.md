@@ -36,7 +36,6 @@ Session rules (`declarativeNetRequest`), scoped to that tab only, remove the hea
 | --- | --- |
 | `declarativeNetRequest` | Tab-scoped rules that allow framing and set the user agent |
 | `scripting` | Inject the device viewer into the tab |
-| `tabs` | Reload the tab and track its state |
 | `storage` | Remember each tab's device while the extension's background worker sleeps |
 | `offscreen` | Detect Chrome's light/dark mode to switch the toolbar icon |
 | `<all_urls>` | Work on any site you open |
