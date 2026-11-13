@@ -56,11 +56,11 @@
   function build() {
     const src = frameUrl();
     main.className = layout;
-    main.replaceChildren(...(layout === 'compare' ? DEVICES : [view.device]).map((d) => figure(d, src)));
+    main.replaceChildren(...(layout === 'compare' ? (view.devices || DEVICES) : [view.device]).map((d) => figure(d, src)));
   }
 
   function size() {
-    const list = layout === 'compare' ? DEVICES : [view.device];
+    const list = layout === 'compare' ? (view.devices || DEVICES) : [view.device];
     main.querySelectorAll('figure').forEach((fig, i) => {
       const d = list[i];
       const s = layout === 'compare'

@@ -100,9 +100,9 @@ async function apply(tabId, device, theme) {
   await setState(tabId, next);
 }
 
-async function compare(tabId, theme) {
+async function compare(tabId, theme, devices) {
   const prev = await getState(tabId);
-  const next = { mode: 'framed', device: prev?.device || null, compare: true, theme };
+  const next = { mode: 'framed', device: prev?.device || null, compare: true, theme, devices };
   await showFramed(tabId, next, prev);
   await setState(tabId, next);
 }
@@ -155,7 +155,7 @@ function handle(msg, reply) {
   const run = serial(tabId, async () => {
     await verify(tabId); // the stored state can be stale if the service worker slept through a reload
     if (msg.type === 'apply') return apply(tabId, msg.device, msg.theme);
-    if (msg.type === 'compare') return compare(tabId, msg.theme);
+    if (msg.type === 'compare') return compare(tabId, msg.theme, msg.devices);
     if (msg.type === 'reset') return stop(tabId, await getState(tabId));
   });
   run.then(async () => reply({ state: await getState(tabId) }))
