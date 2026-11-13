@@ -49,11 +49,6 @@ No data leaves your browser.
 - The user agent is sent to servers, but scripts in the page still see your desktop browser's `navigator.userAgent`, and touch input and pixel density aren't emulated.
 - Sites that block framing with scripts, or that serve their HTML from a service worker, may not display correctly.
 
-## Credits
-
-- [Space Grotesk](https://github.com/floriankarsten/space-grotesk) font, SIL Open Font License 1.1 (`fonts/OFL.txt`)
-- Icon based on [Material Symbols](https://github.com/google/material-design-icons) "devices", Apache License 2.0 (`icons/LICENSE-material-symbols.txt`)
-
 ## License
 
 [MIT](LICENSE) © 2026 Adnan Ahmed
