@@ -4,7 +4,7 @@ A Chrome extension to preview any website at phone, tablet, desktop or custom si
 
 ## Features
 
-- **10 device presets**: iPhone SE, iPhone 15 Pro / Pro Max, Pixel 8, Galaxy S24, iPad Mini / Air / Pro, Laptop and Desktop
+- **10 device presets**: iPhone 18 Pro / Pro Max, Pixel 11 Pro / Pro XL, Galaxy S26 / S26 Ultra, iPad mini, iPad Pro 13", Laptop and Desktop
 - **Custom sizes**: enter any width and height
 - **Rotate** between portrait and landscape, keeping your scroll position
 - **Zoom**: 50%, 75%, 100%, or Fit to the window
