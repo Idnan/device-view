@@ -6,7 +6,7 @@ A Chrome extension to preview any website at phone, tablet, desktop or custom si
 
 - **10 device presets**: iPhone 18 Pro / Pro Max, Pixel 11 Pro / Pro XL, Galaxy S26 / S26 Ultra, iPad mini, iPad Pro 13", Laptop and Desktop
 - **Custom sizes**: enter any width and height
-- **Manage devices**: tick which of the 21 built-in devices to show and add your own sizes. Your list follows you to other computers through Chrome sync; **Reset to defaults** brings back the default list
+- **Manage devices**: tick which of the 23 built-in devices to show and add your own sizes. Your list follows you to other computers through Chrome sync; **Reset to defaults** brings back the default list
 - **Rotate** between portrait and landscape, keeping your scroll position
 - **Zoom**: 50%, 75%, 100%, or Fit to the window
 - **Compare**: every device side by side in one tab

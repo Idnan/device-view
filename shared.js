@@ -8,6 +8,9 @@ const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KH
 const CATALOG = [
   { name: 'iPhone 18 Pro', width: 402, height: 874, dpr: 3, mobile: true, ua: IOS },
   { name: 'iPhone 18 Pro Max', width: 440, height: 956, dpr: 3, mobile: true, ua: IOS },
+  // Foldable: Apple publishes pixels only (1398×2034 outer, 1878×2670 inner); these are those ÷ 3.
+  { name: 'iPhone Duo (folded)', width: 466, height: 678, dpr: 3, mobile: true, ua: IOS },
+  { name: 'iPhone Duo (open)', width: 626, height: 890, dpr: 3, mobile: true, ua: IOS },
   { name: 'iPhone Air', width: 420, height: 912, dpr: 3, mobile: true, ua: IOS },
   { name: 'iPhone 17', width: 402, height: 874, dpr: 3, mobile: true, ua: IOS },
   { name: 'iPhone 16e', width: 390, height: 844, dpr: 3, mobile: true, ua: IOS },

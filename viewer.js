@@ -19,6 +19,7 @@
     figure { margin: 0; flex: none; display: flex; flex-direction: column; gap: 8px; }
     figcaption { display: flex; justify-content: space-between; gap: 16px; font-weight: 700; }
     figcaption span { color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+    figcaption i { font-style: normal; color: var(--muted); font-weight: 500; }
     .frame { position: relative; overflow: hidden; border: 2px solid var(--edge); border-radius: 14px; background: #fff; box-shadow: 4px 4px 0 var(--edge); }
     iframe { display: block; border: 0; transform-origin: 0 0; background: #fff; }
     .frame.loading::before { content: ''; position: absolute; inset: 0; z-index: 1; background: rgb(255 255 255 / .45); } /* see-through: a reload keeps the old page visible; z-index because the scaled iframe paints above unindexed siblings */
@@ -59,14 +60,21 @@
     main.replaceChildren(...(layout === 'compare' ? (view.devices || DEVICES) : [view.device]).map((d) => figure(d, src)));
   }
 
+  // Fit: shrink to the window. Phones and tablets use the scale that fits BOTH orientations, so rotating
+  // doesn't make the same device look bigger; computers never rotate, so they just fit as shown.
+  const fit = (w, h) => Math.min(1, (innerWidth - 56) / w, (innerHeight - 96) / h);
+  const fitScale = (d) => (d.mobile ? Math.min(fit(d.width, d.height), fit(d.height, d.width)) : fit(d.width, d.height));
+
   function size() {
     const list = layout === 'compare' ? (view.devices || DEVICES) : [view.device];
     main.querySelectorAll('figure').forEach((fig, i) => {
       const d = list[i];
       const s = layout === 'compare'
         ? Math.min(1, (innerHeight - 110) / d.height)
-        : typeof d.zoom === 'number' ? d.zoom : Math.min(1, (innerWidth - 56) / d.width, (innerHeight - 96) / d.height);
-      fig.querySelector('b').textContent = d.name;
+        : typeof d.zoom === 'number' ? d.zoom : fitScale(d);
+      const orientation = d.width > d.height ? 'Landscape' : d.width < d.height ? 'Portrait' : '';
+      fig.querySelector('b').replaceChildren(d.name,
+        ...(orientation ? [Object.assign(document.createElement('i'), { textContent: ` \u00b7 ${orientation}` })] : []));
       fig.querySelector('span').textContent = `${d.width}\u00d7${d.height}${s < 1 ? ` \u00b7 ${Math.round(s * 100)}%` : ''}`;
       const frame = fig.querySelector('.frame');
       frame.style.width = `${Math.round(d.width * s) + 4}px`; // +4 for the 2px border on each side
