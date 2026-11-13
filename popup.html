@@ -15,17 +15,9 @@
   .hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
   #name { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
   #meta { font-size: 14px; font-weight: 500; margin-top: 2px; font-variant-numeric: tabular-nums; }
-  .hero-row { display: flex; gap: 6px; }
   .hero.live { background: var(--yellow); color: var(--on-yellow); }
-  .hero.live .btn, .hero.live .seg { background: #fff; color: #0a0a0a; border-color: #0a0a0a; }
+  .hero.live .btn { background: #fff; color: #0a0a0a; border-color: #0a0a0a; }
 
-  .seg { flex-grow: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 2px solid var(--ink);
-         border-radius: 8px; overflow: hidden; background: var(--card); }
-  .seg button { height: 28px; border: 0; background: none; font-size: 11.5px; font-weight: 600; }
-  .seg button + button { border-left: 2px solid; border-left-color: inherit; } /* the group border colour, not the text colour (white on the pressed button) */
-  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
-  .hero.live .seg button[aria-pressed="true"] { background: #0a0a0a; color: #fff; }
-  .seg button:not(:disabled):not([aria-pressed="true"]):hover { background: var(--yellow); color: var(--on-yellow); }
   .hero.live .btn:not(:disabled):hover { box-shadow: 2px 2px 0 #0a0a0a; } /* --ink is light in dark mode; the yellow card always wants black */
 
   [hidden] { display: none !important; }
@@ -39,7 +31,7 @@
              margin: -2px -4px -3px -2px; padding: 2px 4px 3px 2px; }
   /* Manage devices: a checklist of built-in devices plus the user's own sizes, in the space the grid,
      custom row and compare button use, so the popup keeps its height. */
-  #manage { height: 360px; overflow-y: auto; border: 2px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink); } /* same hard shadow as the hero card */
+  #manage { height: 400px; overflow-y: auto; border: 2px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink); } /* same hard shadow as the hero card */
   .group { margin: 0; padding: 8px 10px 4px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
            color: var(--muted); background: color-mix(in srgb, var(--ink) 6%, var(--card));
            position: sticky; top: 0; z-index: 1; } /* the current group's heading stays on top while scrolling */
@@ -115,15 +107,6 @@
       <button id="reset" class="btn icon-btn" aria-label="Turn off" title="Turn off" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 3v9"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg>
       </button>
-    </div>
-    <div class="hero-row">
-      <button id="rotate" class="btn" disabled>Rotate</button>
-      <div id="zoom" class="seg" role="group" aria-label="Zoom">
-        <button data-zoom="0.5" disabled>50%</button>
-        <button data-zoom="0.75" disabled>75%</button>
-        <button data-zoom="1" disabled>100%</button>
-        <button data-zoom="fit" disabled>Fit</button>
-      </div>
     </div>
   </section>
 

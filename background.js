@@ -139,7 +139,8 @@ chrome.tabs.onRemoved.addListener((tabId) => { setState(tabId, null); dropRules(
 
 chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
   if (msg.type === 'scheme') return void setScheme(msg.dark);
-  return handle(msg, reply);
+  // The popup names its tab; the viewer's toolbar is inside the tab it controls.
+  return handle({ tabId: _sender.tab?.id, ...msg }, reply);
 });
 
 // One command at a time per tab: overlapping clicks would otherwise run two takeovers at once.

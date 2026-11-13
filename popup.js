@@ -16,11 +16,6 @@ function render(res = {}) {
     : current ? `${current.width} × ${current.height} · ${current.dpr}x` : 'Pick a device below');
   $('meta').classList.toggle('err', !!res.error);
   $('reset').disabled = !state;
-  $('rotate').disabled = !current;
-  for (const b of $('zoom').children) {
-    b.disabled = !current;
-    b.setAttribute('aria-pressed', String(!!current && String(current.zoom ?? 'fit') === b.dataset.zoom));
-  }
   markPressed();
   $('compare-label').textContent = state?.compare ? 'Exit compare' : 'Compare all side by side';
   if (current) { $('w').value = current.width; $('h').value = current.height; }
@@ -175,12 +170,6 @@ $('custom').onsubmit = (e) => {
   e.preventDefault();
   apply({ name: 'Custom', width: +$('w').value, height: +$('h').value, dpr: 1, mobile: false });
 };
-
-$('rotate').onclick = () => apply({ ...current, width: current.height, height: current.width });
-
-for (const b of $('zoom').children) {
-  b.onclick = () => apply({ ...current, zoom: b.dataset.zoom === 'fit' ? 'fit' : +b.dataset.zoom });
-}
 
 $('reset').onclick = () => send({ type: 'reset' });
 

@@ -7,8 +7,7 @@ A Chrome extension to preview any website at phone, tablet, desktop or custom si
 - **10 device presets**: iPhone 18 Pro / Pro Max, Pixel 11 Pro / Pro XL, Galaxy S26 / S26 Ultra, iPad mini, iPad Pro 13", Laptop and Desktop
 - **Custom sizes**: enter any width and height
 - **Manage devices**: tick which of the 23 built-in devices to show and add your own sizes. Your list follows you to other computers through Chrome sync; **Reset to defaults** brings back the default list
-- **Rotate** between portrait and landscape, keeping your scroll position
-- **Zoom**: 50%, 75%, 100%, or Fit to the window
+- **On-page toolbar**: rotate between portrait and landscape (keeping your scroll position), zoom to 50%, 75%, 100% or Fit, and turn the view off, right above the device. Shortcuts: **R** rotate, **1** / **2** / **3** / **F** zoom
 - **Compare**: every device side by side in one tab
 - **Mobile user agent**: phone and tablet presets send their user agent to the server, so sites that detect mobile serve their mobile version
 - **Light and dark themes**, with a toolbar icon that follows Chrome's mode
@@ -23,7 +22,7 @@ Device View isn't on the Chrome Web Store yet. To install it from source:
 
 ## Usage
 
-Open any `http(s)` page, click the Device View icon and pick a device. The tab switches to the device view; click the power button to return to the normal page. You stay on whatever page you navigated to inside the device frame.
+Open any `http(s)` page, click the Device View icon and pick a device. The tab switches to the device view, with a toolbar above the device for rotating and zooming; click the power button (in the toolbar or the popup) to return to the normal page. You stay on whatever page you navigated to inside the device frame.
 
 ## How it works
 
