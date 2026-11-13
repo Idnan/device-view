@@ -10,8 +10,10 @@ function render(res = {}) {
   $('hero').classList.toggle('live', !!state);
   $('hero').removeAttribute('aria-busy');
   $('name').textContent = state?.compare ? 'All devices' : current?.name ?? 'Off';
-  $('meta').textContent = state?.compare ? `${DEVICES.length} side by side`
-    : current ? `${current.width} × ${current.height} · ${current.dpr}x` : 'Pick a device below';
+  // Errors take the meta line instead of their own box, so the popup never grows past Chrome's 600px limit.
+  $('meta').textContent = res.error || (state?.compare ? `${DEVICES.length} side by side`
+    : current ? `${current.width} × ${current.height} · ${current.dpr}x` : 'Pick a device below');
+  $('meta').classList.toggle('err', !!res.error);
   $('reset').disabled = !state;
   $('rotate').disabled = !current;
   for (const b of $('zoom').children) {
@@ -20,7 +22,6 @@ function render(res = {}) {
   }
   for (const b of $('devices').children) b.setAttribute('aria-pressed', String(current?.name === b.dataset.name));
   $('compare-label').textContent = state?.compare ? 'Exit compare' : 'Compare all side by side';
-  $('error').textContent = res.error || '';
   if (current) { $('w').value = current.width; $('h').value = current.height; }
 }
 
