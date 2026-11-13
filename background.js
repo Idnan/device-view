@@ -1,14 +1,11 @@
-// Two ways to show a tab as a device:
-//  framed (default): the tab is taken over by viewer.js, which shows the site in an iframe cut to the device size.
-//                    Clean edges, no debugging bar, same origin as the site so logins keep working.
-//  full:             chrome.debugger emulation (touch, pixel density, user agent), like DevTools device mode.
+// The tab is taken over by viewer.js, which shows the site in an iframe cut to the device size.
+// Clean edges, no debugging bar, same origin as the site so logins keep working.
+// (Full chrome.debugger emulation was removed for now; it is in git history at c1d8e02.)
 // Per-tab state lives in storage.session because the service worker is killed when idle.
 
 const key = (tabId) => `tab:${tabId}`;
 const getState = async (tabId) => (await chrome.storage.session.get(key(tabId)))[key(tabId)] || null;
 const setState = (tabId, s) => s ? chrome.storage.session.set({ [key(tabId)]: s }) : chrome.storage.session.remove(key(tabId));
-
-// ---------- framed mode ----------
 
 // Headers that stop a page from being framed or from talking to its parent.
 const STRIP = ['x-frame-options', 'content-security-policy', 'frame-options',
@@ -87,75 +84,28 @@ async function stopFramed(tabId) {
   await (url && /^https?:/.test(url) ? chrome.tabs.update(tabId, { url }) : chrome.tabs.reload(tabId));
 }
 
-// ---------- full emulation mode ----------
-
-const send = (tabId, method, params) => chrome.debugger.sendCommand({ tabId }, method, params);
-
-async function emulate(tabId, d, prev) {
-  if (prev?.mode !== 'full') await chrome.debugger.attach({ tabId }, '1.3');
-
-  // "fit" shrinks the device to the window, like DevTools' auto-zoom; otherwise a fixed zoom (0.5, 0.75, 1).
-  const tab = await chrome.tabs.get(tabId);
-  const scale = typeof d.zoom === 'number' ? d.zoom : Math.min(1, tab.width / d.width, tab.height / d.height);
-
-  await send(tabId, 'Emulation.setDeviceMetricsOverride', {
-    width: d.width, height: d.height, deviceScaleFactor: d.dpr, mobile: d.mobile, scale,
-  });
-  await send(tabId, 'Emulation.setTouchEmulationEnabled', { enabled: d.mobile, maxTouchPoints: d.mobile ? 5 : 1 });
-  await send(tabId, 'Emulation.setEmitTouchEventsForMouse', { enabled: d.mobile, configuration: 'mobile' });
-
-  const ua = d.ua || '';
-  if (prev?.mode !== 'full' || ua !== (prev.device.ua || '')) {
-    await send(tabId, 'Emulation.setUserAgentOverride', { userAgent: ua });
-    // Sites sniff the user agent on load, so reload only when it changed.
-    await send(tabId, 'Page.reload', {});
-  }
-}
-
-async function stopFull(tabId) {
-  await chrome.debugger.detach({ tabId }).catch(() => {}); // detaching drops every override
-  await chrome.tabs.reload(tabId);
-}
-
-// ---------- commands ----------
-
 // Resolves once the real page has loaded again.
 async function stop(tabId, prev) {
   await setState(tabId, null);
   if (!prev) return;
   const loaded = waitForLoad(tabId); // listen before reloading so a fast load isn't missed
-  await (prev.mode === 'framed' ? stopFramed(tabId) : stopFull(tabId));
+  await stopFramed(tabId);
   await loaded;
 }
 
-async function apply(tabId, device, full, theme) {
-  let prev = await getState(tabId);
-  const mode = full ? 'full' : 'framed';
-  if (prev && prev.mode !== mode) {
-    await stop(tabId, prev);
-    prev = null;
-  }
-  const next = { mode, device, compare: false, theme };
-  if (full) await emulate(tabId, device, prev);
-  else await showFramed(tabId, next, prev);
-  await setState(tabId, next);
-}
-
-async function compare(tabId, theme) {
-  let prev = await getState(tabId);
-  if (prev?.mode === 'full') {
-    await stop(tabId, prev);
-    prev = null;
-  }
-  const next = { mode: 'framed', device: prev?.device || null, compare: true, theme };
+async function apply(tabId, device, theme) {
+  const prev = await getState(tabId);
+  const next = { mode: 'framed', device, compare: false, theme };
   await showFramed(tabId, next, prev);
   await setState(tabId, next);
 }
 
-// User clicked "Cancel" on Chrome's debugging bar.
-chrome.debugger.onDetach.addListener(async ({ tabId }) => {
-  if ((await getState(tabId))?.mode === 'full') setState(tabId, null);
-});
+async function compare(tabId, theme) {
+  const prev = await getState(tabId);
+  const next = { mode: 'framed', device: prev?.device || null, compare: true, theme };
+  await showFramed(tabId, next, prev);
+  await setState(tabId, next);
+}
 
 // If a framed tab no longer shows the viewer (user reloaded or navigated, a link targeted the top page),
 // forget it and drop its rules.
@@ -166,8 +116,7 @@ async function verify(tabId) {
 }
 chrome.tabs.onUpdated.addListener((tabId, info) => { if (info.status === 'complete') verify(tabId); });
 
-// After an install, update or browser restart, nothing from before is trustworthy: old viewers and
-// debugger sessions are gone, so drop every leftover rule and state.
+// After an install, update or browser restart, nothing from before is trustworthy: old viewers are gone, so drop every leftover rule and state.
 const clearAll = () => Promise.all([
   chrome.declarativeNetRequest.getSessionRules()
     .then((rules) => chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: rules.map((r) => r.id) })),
@@ -176,9 +125,22 @@ const clearAll = () => Promise.all([
 chrome.runtime.onInstalled.addListener(clearAll);
 chrome.runtime.onStartup.addListener(clearAll);
 
+// Black toolbar icon on light Chrome, white on dark. offscreen.html watches the colour scheme for us.
+const setScheme = (dark) => chrome.action.setIcon({
+  path: { 16: `icons/icon16${dark ? '-white' : ''}.png`, 32: `icons/icon32${dark ? '-white' : ''}.png` },
+});
+const watchScheme = () => chrome.offscreen.createDocument({
+  url: 'offscreen.html', reasons: ['MATCH_MEDIA'], justification: 'Match the toolbar icon to light or dark mode.',
+}).catch(() => {}); // already open
+chrome.runtime.onInstalled.addListener(watchScheme);
+chrome.runtime.onStartup.addListener(watchScheme);
+
 chrome.tabs.onRemoved.addListener((tabId) => { setState(tabId, null); dropRules(tabId); });
 
-chrome.runtime.onMessage.addListener((msg, _sender, reply) => handle(msg, reply));
+chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
+  if (msg.type === 'scheme') return void setScheme(msg.dark);
+  return handle(msg, reply);
+});
 
 // One command at a time per tab: overlapping clicks would otherwise run two takeovers at once.
 const queues = new Map();
@@ -192,7 +154,7 @@ function handle(msg, reply) {
   const { tabId } = msg;
   const run = serial(tabId, async () => {
     await verify(tabId); // the stored state can be stale if the service worker slept through a reload
-    if (msg.type === 'apply') return apply(tabId, msg.device, msg.full, msg.theme);
+    if (msg.type === 'apply') return apply(tabId, msg.device, msg.theme);
     if (msg.type === 'compare') return compare(tabId, msg.theme);
     if (msg.type === 'reset') return stop(tabId, await getState(tabId));
   });

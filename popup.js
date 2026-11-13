@@ -19,7 +19,6 @@ function render(res = {}) {
     b.setAttribute('aria-pressed', String(!!current && String(current.zoom ?? 'fit') === b.dataset.zoom));
   }
   for (const b of $('devices').children) b.setAttribute('aria-pressed', String(current?.name === b.dataset.name));
-  if (state) $('full').checked = state.mode === 'full';
   $('compare-label').textContent = state?.compare ? 'Exit compare' : 'Compare all side by side';
   $('error').textContent = res.error || '';
   if (current) { $('w').value = current.width; $('h').value = current.height; }
@@ -32,9 +31,8 @@ function send(msg) {
 }
 
 function apply(device) {
-  const full = $('full').checked;
-  if (!full && !webPage()) return render({ state, error: 'This page can only be shown with Full emulation.' });
-  return send({ type: 'apply', full, device: { zoom: current?.zoom ?? 'fit', ...device } });
+  if (!webPage()) return render({ state, error: 'Device View only works on http(s) pages.' });
+  return send({ type: 'apply', device: { zoom: current?.zoom ?? 'fit', ...device } });
 }
 
 for (const d of DEVICES) {
@@ -66,17 +64,10 @@ $('compare').onclick = () => {
   send({ type: 'compare' });
 };
 
-// Remember the mode; switching it while a device is showing re-applies that device in the new mode.
-$('full').onchange = () => {
-  localStorage.setItem('full', $('full').checked ? '1' : '');
-  if (current) apply(current);
-};
-$('full').checked = localStorage.getItem('full') === '1';
-
 initTheme($('theme'));
 // The framed viewer draws its own background, so push the new theme to it.
 $('theme').addEventListener('click', () => {
-  if (state?.mode !== 'framed') return;
+  if (!state) return;
   if (state.compare) send({ type: 'compare' }); else apply(current);
 });
 
