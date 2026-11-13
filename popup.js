@@ -27,7 +27,8 @@ function render(res = {}) {
 
 function send(msg) {
   $('hero').setAttribute('aria-busy', 'true');
-  $('meta').textContent = 'Loading…';
+  $('meta').textContent = msg.type === 'reset' ? 'Turning off…' : 'Loading…';
+  $('reset').disabled = true; // no double turn-off; render() re-enables it once the command is done
   return chrome.runtime.sendMessage({ tabId: tab.id, theme: theme(), ...msg }).then(render);
 }
 
